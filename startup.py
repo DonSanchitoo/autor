@@ -8,6 +8,11 @@ from qgis.PyQt.QtWidgets import (
     QApplication, QTreeView, QDockWidget, QWidget, QLabel, 
     QVBoxLayout, QToolBar, QAction, QMainWindow, QMenu, QLineEdit
 )
+from qgis.PyQt.QtWidgets import (
+    QApplication, QTreeView, QDockWidget, QWidget, QLabel,
+    QVBoxLayout, QHBoxLayout, QToolBar, QAction, QMainWindow, QMenu, QLineEdit
+)
+
 from qgis.utils import iface
 
 # --- Vérifier si les touches M et E sont maintenues au démarrage (Windows) ---
@@ -105,27 +110,61 @@ if is_key_pressed(VK_M) and is_key_pressed(VK_E):
     # --- Mode Maintenance ---
     print("Touches M + E enfoncées : mode Maintenance actif. Script de personnalisation ignoré.")
     
-    # Splash screen
+    from qgis.PyQt.QtGui import QPixmap, QFont
+    from qgis.PyQt.QtWidgets import QWidget, QLabel, QHBoxLayout, QSizePolicy, QApplication
+    from qgis.PyQt.QtCore import Qt, QTimer
+    import os
+
+    # --- Splash screen ---
     splash = QWidget()
     splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool)
     splash.setAttribute(Qt.WA_TranslucentBackground)
-    splash.setFixedSize(400, 80)
+
+    layout = QHBoxLayout()
+    layout.setContentsMargins(12, 12, 12, 12)
+    layout.setSpacing(12)
+
+    # --- Logo ---
+    script_dir = os.path.dirname(__file__)
+    logo_path = os.path.join(script_dir, "logo.png")
+    if os.path.exists(logo_path):
+        logo_label = QLabel()
+        pixmap = QPixmap(logo_path)
+        pixmap = pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation)  # logo raisonnable
+        logo_label.setPixmap(pixmap)
+        logo_label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        logo_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # ne s'étire pas
+        layout.addWidget(logo_label)
+
+    # --- Texte avec cadre serré autour du texte ---
     label = QLabel("Bienvenue dans QGIS for Administrator")
-    label.setAlignment(Qt.AlignCenter)
-    label.setWordWrap(True)
     label.setFont(QFont("Arial", 12, QFont.Bold))
-    label.setStyleSheet("color: white; background-color: rgba(255, 29, 0, 220); border-radius: 10px; padding: 10px;")
-    layout = QVBoxLayout()
-    layout.addWidget(label)
-    layout.setContentsMargins(0, 0, 0, 0)
+    label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+    label.setStyleSheet(
+        "color: white;"
+        "background-color: rgba(244, 44, 7, 1);"
+        "border-radius: 8px;"
+        "padding: 4px 8px;"  # fond proche du texte
+    )
+    label.setWordWrap(False)
+    label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)  # taille minimale selon le texte
+
+    layout.addWidget(label, 0)
+
     splash.setLayout(layout)
 
+    # Laisser le widget choisir sa taille d'après son contenu
+    splash.adjustSize()
+
+    # --- Positionnement au centre de l'écran ---
     screen_geometry = QApplication.instance().primaryScreen().geometry()
     center_point = screen_geometry.center() - splash.rect().center()
     offset_y = 160
     splash.move(center_point.x(), center_point.y() + offset_y)
     splash.show()
     QTimer.singleShot(2500, splash.close)
+
+
     
     iface.initializationCompleted.connect(restaurer_interface_par_defaut)
 
@@ -205,20 +244,53 @@ else:
         nouvelle_toolbar.addAction(action_table)
         iface.mainWindow().addToolBar(nouvelle_toolbar)
 
-    # --- Splash screen discret ---
+    from qgis.PyQt.QtGui import QPixmap, QFont
+    from qgis.PyQt.QtWidgets import QWidget, QLabel, QHBoxLayout, QSizePolicy, QApplication
+    from qgis.PyQt.QtCore import Qt, QTimer
+    import os
+
+    # --- Splash screen ---
     splash = QWidget()
     splash.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool)
     splash.setAttribute(Qt.WA_TranslucentBackground)
-    splash.setFixedSize(400, 80)
+
+    layout = QHBoxLayout()
+    layout.setContentsMargins(12, 12, 12, 12)
+    layout.setSpacing(12)
+
+    # --- Logo ---
+    script_dir = os.path.dirname(__file__)
+    logo_path = os.path.join(script_dir, "logo.png")
+    if os.path.exists(logo_path):
+        logo_label = QLabel()
+        pixmap = QPixmap(logo_path)
+        pixmap = pixmap.scaled(192, 192, Qt.KeepAspectRatio, Qt.SmoothTransformation)  # logo raisonnable
+        logo_label.setPixmap(pixmap)
+        logo_label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        logo_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)  # ne s'étire pas
+        layout.addWidget(logo_label)
+
+    # --- Texte avec cadre serré autour du texte ---
     label = QLabel("Bienvenue dans QGIS for Capelle Group : Autor")
-    label.setAlignment(Qt.AlignCenter)
-    label.setWordWrap(True)
     label.setFont(QFont("Arial", 12, QFont.Bold))
-    label.setStyleSheet("color: white; background-color: rgba(46, 52, 64, 220); border-radius: 10px; padding: 10px;")
-    layout = QVBoxLayout()
-    layout.addWidget(label)
-    layout.setContentsMargins(0, 0, 0, 0)
+    label.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+    label.setStyleSheet(
+        "color: white;"
+        "background-color: rgba(46, 52, 64, 220);"
+        "border-radius: 8px;"
+        "padding: 4px 8px;"  # fond proche du texte
+    )
+    label.setWordWrap(False)
+    label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)  # taille minimale selon le texte
+
+    layout.addWidget(label, 0)
+
     splash.setLayout(layout)
+
+    # Laisser le widget choisir sa taille d'après son contenu
+    splash.adjustSize()
+
+    # --- Positionnement au centre de l'écran ---
     screen_geometry = QApplication.instance().primaryScreen().geometry()
     center_point = screen_geometry.center() - splash.rect().center()
     offset_y = 160
