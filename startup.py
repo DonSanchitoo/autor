@@ -52,6 +52,44 @@ def set_processing(enabled: bool):
         config.write(f)
 
     print(f"Processing {'activé' if enabled else 'désactivé'} dans QGIS3.ini (au prochain démarrage).")
+    
+# ----------------------------------------------------------------------
+# --- GESTION DU FICHIER QGISCUSTOMIZATION3.ini SELON LE MODE ---
+# ----------------------------------------------------------------------
+
+def maj_customization_ini(admin_mode: bool):
+    """
+    Met à jour QGISCUSTOMIZATION3.ini selon le mode de démarrage.
+    - admin_mode=True : réactive les éléments cachés
+    - admin_mode=False : désactive les éléments interdits
+    """
+    qgis_appdata = os.path.join(os.getenv('APPDATA'), 'QGIS', 'QGIS3')
+    custom_ini = os.path.join(qgis_appdata, 'profiles', 'default', 'QGIS', 'QGISCUSTOMIZATION3.ini')
+
+    if not os.path.exists(custom_ini):
+        print(f"⚠️ Fichier de personnalisation introuvable : {custom_ini}")
+        return
+
+    config = configparser.ConfigParser()
+    config.optionxform = str  # Respecte la casse des clés
+    config.read(custom_ini, encoding='utf-8')
+
+    section = 'Customization'
+    if section not in config.sections():
+        config.add_section(section)
+
+    # Définir les valeurs selon le mode
+    valeur = 'true' if admin_mode else 'false'
+
+    config.set(section, 'Docks\\Browser', valeur)
+    config.set(section, 'Docks\\Browser2', valeur)
+    config.set(section, 'Toolbars\\mDataSourceManagerToolBar', valeur)
+
+    with open(custom_ini, 'w', encoding='utf-8') as f:
+        config.write(f)
+
+    print(f"✅ QGISCUSTOMIZATION3.ini mis à jour pour mode {'Admin' if admin_mode else 'Contraint'}.")
+
 
 # ----------------------------------------------------------------------
 # --- DÉFINITION DE LA FONCTION DE RESTAURATION (Mode Maintenance) ---
@@ -110,6 +148,9 @@ if is_key_pressed(VK_M) and is_key_pressed(VK_E):
     # --- Mode Maintenance ---
     print("Touches M + E enfoncées : mode Maintenance actif. Script de personnalisation ignoré.")
     
+    maj_customization_ini(admin_mode=True)
+
+    
     from qgis.PyQt.QtGui import QPixmap, QFont
     from qgis.PyQt.QtWidgets import QWidget, QLabel, QHBoxLayout, QSizePolicy, QApplication
     from qgis.PyQt.QtCore import Qt, QTimer
@@ -163,8 +204,6 @@ if is_key_pressed(VK_M) and is_key_pressed(VK_E):
     splash.move(center_point.x(), center_point.y() + offset_y)
     splash.show()
     QTimer.singleShot(2500, splash.close)
-
-
     
     iface.initializationCompleted.connect(restaurer_interface_par_defaut)
 
@@ -173,6 +212,8 @@ else:
     
     # Désactiver Processing dans QGIS3.ini pour le prochain démarrage
     set_processing(False)
+    maj_customization_ini(admin_mode=False)
+
 
     def masquer_tout_sauf_edition_selection():
         """
